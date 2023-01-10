@@ -1,70 +1,81 @@
+import React, { useEffect, useState } from "react";
+import { StyleSheet, View, Text, Dimensions, Platform } from "react-native";
 import { Camera, CameraType } from "expo-camera";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, Dimensions } from "react-native";
-import { useState, useEffect, useRef } from "react";
 
 export default function App() {
-  let cameraRef = useRef();
-  let ratio = undefined;
-  let suggestedRatio;
-  const [type, setType] = useState(CameraType.front);
+  //  camera permissions
   const [permission, requestPermission] = Camera.useCameraPermissions();
-  const [isCameraReady, setIsCameraReady] = useState(false);
+  const [camera, setCamera] = useState(null);
 
+  const [ratio, setRatio] = useState("4:3"); // default is 4:3
+  const [isRatioSet, setIsRatioSet] = useState(false);
+
+  // on screen  load, ask for permission to use the camera
   useEffect(() => {
-    requestPermission;
+    requestPermission();
   }, []);
 
-  if (!permission) {
-    // Camera permissions are still loading
-    return <View />;
-  }
-
-  const onCameraReadyHandler = async () => {
-    setIsCameraReady(true);
-    ratio = await cameraRef.current.getSupportedRatiosAsync();
-    console.log(ratio);
-    suggestedRatio = ratio.pop();
-    console.log(suggestedRatio);
+  // set the camera ratio and padding.
+  // this code assumes a portrait mode screen
+  const prepareRatio = async () => {
+    if (Platform.OS === "android") {
+      const ratios = await camera.getSupportedRatiosAsync();
+      setRatio(ratios.pop());
+      setIsRatioSet(true);
+    }
   };
 
-  return (
-    <View style={styles.container}>
-      <StatusBar style='hidden' />
-      <Camera
-        style={styles.camera}
-        type={type}
-        ratio={"20:9"}
-        ref={cameraRef}
-        onCameraReady={onCameraReadyHandler}
-      ></Camera>
-    </View>
-  );
+  // the camera must be loaded in order to access the supported ratios
+  const setCameraReady = async () => {
+    if (!isRatioSet) {
+      await prepareRatio();
+    }
+  };
+
+  if (!permission) {
+    return (
+      <View style={styles.information}>
+        <Text>Waiting for camera permissions</Text>
+      </View>
+    );
+  } else if (permission.granted) {
+    return (
+      <View style={styles.container}>
+        <StatusBar translucent={true} />
+        <Camera
+          type={CameraType.front}
+          style={[styles.cameraPreview]}
+          onCameraReady={setCameraReady}
+          ratio={ratio}
+          ref={ref => {
+            setCamera(ref);
+          }}
+        ></Camera>
+      </View>
+    );
+  } else {
+    return (
+      <View>
+        <Text>Error encountered</Text>
+      </View>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
-  container: {
+  information: {
     flex: 1,
     justifyContent: "center",
-  },
-  camera: {
-    width: Dimensions.get("window").width,
-    height: Dimensions.get("screen").height,
-  },
-  buttonContainer: {
-    flex: 1,
-    flexDirection: "row",
-    backgroundColor: "transparent",
-    margin: 64,
-  },
-  button: {
-    flex: 1,
-    alignSelf: "flex-end",
+    alignContent: "center",
     alignItems: "center",
   },
-  text: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "white",
+  container: {
+    flex: 1,
+    backgroundColor: "#000",
+    justifyContent: "center",
+  },
+  cameraPreview: {
+    flex: 1,
   },
 });
