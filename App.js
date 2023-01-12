@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Text, Dimensions, Platform } from "react-native";
+import { StyleSheet, View, Text, Platform, Dimensions } from "react-native";
 import { Camera, CameraType } from "expo-camera";
 import { StatusBar } from "expo-status-bar";
+
+let aspectRatio;
 
 export default function App() {
   //  camera permissions
@@ -16,12 +18,18 @@ export default function App() {
     requestPermission();
   }, []);
 
+  const calWidth = dim => {
+    aspectRatio = dim[1] / dim[0];
+  };
+
   // set the camera ratio and padding.
   // this code assumes a portrait mode screen
   const prepareRatio = async () => {
     if (Platform.OS === "android") {
       const ratios = await camera.getSupportedRatiosAsync();
-      setRatio(ratios.pop());
+      let ratio = ratios.pop();
+      setRatio(ratio);
+      calWidth(ratio.split(":"));
       setIsRatioSet(true);
     }
   };
@@ -57,7 +65,7 @@ export default function App() {
   } else {
     return (
       <View>
-        <Text>Error encountered</Text>
+        <Text>Waiting For Permission</Text>
       </View>
     );
   }
@@ -72,10 +80,14 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: "#000",
     justifyContent: "center",
+    alignContent: "center",
   },
   cameraPreview: {
     flex: 1,
+    alignItems: "center",
+    alignContent: "center",
+    justifyContent: "center",
+    aspectRatio: aspectRatio,
   },
 });
