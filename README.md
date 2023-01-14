@@ -1,10 +1,12 @@
-<p align='center" >
+<p align='center' >
     <a href='https://github.com/AaronHo-0716/mirror'>
         <img src='./assets/icon_README.png'>
     </a>
 </p>
 
-# Mirror
+<p align='center'> 
+    <h1 >Mirror</h1>
+</p>
 
 **Mirror is an Android App made with Expo that displays users' front face to make them realize what a failure they are.**
 
