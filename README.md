@@ -1,4 +1,8 @@
-![Mirror](./assets/icon_README.png)
+<p align='center" >
+    <a href='https://github.com/AaronHo-0716/mirror'>
+        <img src='./assets/icon_README.png'>
+    </a>
+</p>
 
 # Mirror
 
